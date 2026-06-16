@@ -1,12 +1,13 @@
 #include "wc.h"
+#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
   int k;
   char *cp;
   int tflag, files;
-  countWord counter;
-  /* Get flags. */
+  // On initialise les champs de la structure
+  countWord  counter={0};
   files = argc - 1;
   k = 1;
   cp = argv[1];
@@ -26,9 +27,9 @@ int main(int argc, char* argv[])
 
   /* If no flags are set, treat as wc -lwc. */
   if (!counter.lflag && !counter.wflag && !counter.cflag) {
-	count.lflag = 1;
-	count.wflag = 1;
-	count.cflag = 1;
+	counter.lflag = 1;
+	counter.wflag = 1;
+	counter.cflag = 1;
   }
 
   /* Process files. */
@@ -36,10 +37,11 @@ int main(int argc, char* argv[])
 
   /* Check to see if input comes from std input. */
   if (k >= argc) {
-	count(stdin);
+	count_file(stdin,&counter);
+
 	if (counter.lflag) printf(" %6ld", counter.lcount);
-	if (counter.wflag) printf(" %6ld", wcount);
-	if (cflag) printf(" %6ld", ccount);
+	if (counter.wflag) printf(" %6ld", counter.wcount);
+	if (counter.cflag) printf(" %6ld", counter.ccount);
 	printf(" \n");
 	fflush(stdout);
 	exit(0);
@@ -47,25 +49,24 @@ int main(int argc, char* argv[])
 
   /* There is an explicit list of files.  Loop on files. */
   while (k < argc) {
-	FILE *f;
-
+	FILE *f ;
 	if ((f = fopen(argv[k], "r")) == (FILE *) NULL) {
 		fprintf(stderr, "wc: cannot open %s\n", argv[k]);
 	} else {
-		count(f);
-		if (lflag) printf(" %6ld", lcount);
-		if (wflag) printf(" %6ld", wcount);
-		if (cflag) printf(" %6ld", ccount);
-		printf(" %s\n", argv[k]);
+		count_file(f, &counter);
+		if (counter.lflag) printf("Nombre de lignes :%6ld\n", counter.lcount);
+		if (counter.wflag) printf("Nombre de mots :%6ld\n", counter.wcount);
+		if (counter.cflag) printf("Nombre de caractères:%6ld\n", counter.ccount);
+		printf("Nom du fichier: %s\n", argv[k]);
 		fclose(f);
 	}
 	k++;
   }
 
   if (tflag) {
-	if (lflag) printf(" %6ld", ltotal);
-	if (wflag) printf(" %6ld", wtotal);
-	if (cflag) printf(" %6ld", ctotal);
+	if (counter.lflag) printf("Nombre de lignes :%6ld\n ", counter.ltotal);
+	if (counter.wflag) printf("Nombre de mots :%6ld\n", counter.wtotal);
+	if (counter.cflag) printf("Nombre de caractères:%6ld\n", counter.ctotal);
 	printf(" total\n");
   }
   fflush(stdout);

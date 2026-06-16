@@ -3,13 +3,13 @@
 #include "wc.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define isspace(c) (c==' ' || c=='\t' || c=='\n' || c=='\f' || c=='\r')
+#include <ctype.h>
 
-void count(FILE* f,countWord* stats)
+void count_file(FILE* f,countWord* stats)
 {
-  register int c;
-  register int word = 0;
-
+  int c;
+  int word = 0;
+  
   stats->lcount = 0;
   stats->wcount = 0;
   stats->ccount = 0L;
@@ -30,9 +30,11 @@ void count(FILE* f,countWord* stats)
 		stats->lcount++;
 	} 
   }
+ 
   stats->ltotal += stats->lcount;
   stats->wtotal += stats->wcount;
   stats->ctotal += stats->ccount;
+   printf("on regarde la valeur %ld",stats->ctotal);
 }
 
 void usage(void)

@@ -21,5 +21,7 @@ typedef struct _count countWord;
 void count_file(FILE* f, countWord* stats);
 void usage(void);
 
+
+
 #endif
 

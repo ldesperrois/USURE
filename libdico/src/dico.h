@@ -21,22 +21,18 @@ typedef struct dict_entry{
 
 
 typedef struct dict_s dict_t;
-// Fonction de l'algo de HASH
+
+// Méthodes accessibles publiquement
+
 uint32_t fnv1a_32(const void *data, size_t len);
-
-
 uint64_t now_us(void);
-// Création d'un dictionnaire
 dict_t* dict_create(void);
-// Suppression d'un element du dictionnaire( libération de mémoire)
-void dict_entry_destroy(dict_entry_t* entry);
-// Suppression de l'ensemble du dictionnaire 
-void dict_destroy(dict_t* destroy);
-// Obtenir la taille du dictionnaire
+void dict_destroy(dict_t* dict);
 size_t dict_len(const dict_t* dict);
-// vérifier si une clé existe dans le dictionnaire
-dict_status_t dict_contains(const dict_t* dict, const void* key, size_t key_len){
-
+dict_status_t dict_contains(const dict_t* dict, const void* key, size_t key_len);
+dict_status_t dict_get_value(const dict_t* dict, const void* key, size_t key_len,
+const void** value_ptr, size_t* value_len);
+dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, size_t value_len);
 
 
 #endif
