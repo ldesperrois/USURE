@@ -21,3 +21,6 @@ with open("fr2000_20000.txt", "w", encoding="iso-8859-1") as out:
             i+=1
 
 print(len(uniq))
+
+if __name__ == "__main__":
+    pass

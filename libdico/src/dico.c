@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "src/dico.h"
 
 /*
  * Ne *PAS* utiliser cette implémentation pour du code de production dans
@@ -68,7 +69,7 @@
 #define HASH_TABLE_DEFAULT_SIZE 503
 //#define HASH_TABLE_DEFAULT_SIZE 100003
 
-typedef struct dict_entry{
+struct dict_s{
 	uint32_t hash;
 	
 	void* raw_key;
@@ -78,7 +79,8 @@ typedef struct dict_entry{
 	size_t value_len;
 
 	struct dict_entry *next;
-} dict_entry_t;
+};
+
 
 struct dict_struct{
 	dict_entry_t** table;
