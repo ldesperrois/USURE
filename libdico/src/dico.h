@@ -5,6 +5,13 @@
 #include <stddef.h>
 #include <stdio.h>
 
+typedef enum {
+    DICT_NOK = 0,
+    DICT_OK,
+    DICT_VALUE_UPDATED,
+    DICT_ERR_NOT_FOUND,
+    DICT_ERR_MALLOC
+} dict_status_t;
 
 typedef struct dict_entry{
 	uint32_t hash;

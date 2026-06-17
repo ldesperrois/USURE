@@ -1,2 +1,16 @@
+# Fichiers objets et compilés
 *.o
+*.so
+*.a
+
+# Dossiers compilés
 /bin
+lib/
+*.dSYM
+
+# Fichiers système macOS
+.DS_Store
+
+# Fichiers de debug
+*.out
+core
