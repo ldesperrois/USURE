@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define HASH_TABLE_DEFAULT_SIZE 512
+
 typedef enum {
     DICT_NOK = 0,
     DICT_OK,
@@ -36,10 +38,11 @@ uint64_t now_us(void);
 dict_t* dict_create(void);
 void dict_destroy(dict_t* dict);
 size_t dict_len(const dict_t* dict);
+dict_status_t dict_key_value_destroy(dict_t* dict ,const void *raw_key,size_t key_len);
+
 dict_status_t dict_contains(const dict_t* dict, const void* key, size_t key_len);
 dict_status_t dict_get_value(const dict_t* dict, const void* key, size_t key_len,
 const void** value_ptr, size_t* value_len);
 dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, size_t value_len);
-
 
 #endif
