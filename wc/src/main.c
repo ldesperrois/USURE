@@ -19,11 +19,11 @@ int main(int argc, char* argv[])
   }
   
 
-  if (!counter.lflag && !counter.wflag && !counter.cflag) {
+  if (!counter.lflag && !counter.wflag && !counter.cflag && !counter.sflag) {
 	counter.lflag = 1;
 	counter.wflag = 1;
 	counter.cflag = 1;
-	counter.sflag = 1;
+
   }
   // Si on a deux fichiers
   tflag = (argc - optind) >= 2;		
@@ -44,21 +44,24 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "wc: cannot open %s\n", argv[optind]);
 	} else {
 		count_file(f, &counter);
-		if (counter.lflag) printf("\nNombre de lignes :%6ld\n", counter.lcount);
-		if (counter.wflag) printf("Nombre de mots :%6ld\n", counter.wcount);
-		if (counter.cflag) printf("Nombre de caractères:%6ld\n", counter.ccount);
-		if (counter.sflag) printf("Nombre de mots uniques%6ld\n",counter.scount);
-		printf("Nom du fichier: %s\n", argv[optind]);
+		if (counter.lflag) 	printf("%-25s%6ld\n", "Nombre de lignes :", counter.lcount);
+		if (counter.wflag) printf("%-25s%6ld\n", "Nombre de mots :", counter.wcount);
+		if (counter.cflag) printf("%-25s%6ld\n", "Nombre de caractères :", counter.ccount);
+		if (counter.sflag) printf("%-25s%6ld\n", "Nombre de mots uniques :", counter.scount);
+		
+		
+		
+		printf("%-25s%6s\n", "Nom du fichier :", argv[optind]);
 		fclose(f);
 	}
 	optind++;
 
   }
   if (tflag) {
-	if (counter.lflag) printf("\nNombre de lignes :%6ld\n ", counter.ltotal);
-	if (counter.wflag) printf("Nombre de mots :%6ld\n", counter.wtotal);
-	if (counter.cflag) printf("Nombre de caractères:%6ld\n", counter.ctotal);
-	if (counter.sflag) printf("Nombre de mots uniques%6ld\n",counter.scount);
+	if (counter.lflag) 	printf("%-25s%6ld\n", "Nombre de lignes :", counter.lcount);
+	if (counter.wflag) printf("%-25s%6ld\n", "Nombre de mots :", counter.wcount);
+	if (counter.cflag) printf("%-25s%6ld\n", "Nombre de caractères :", counter.ccount);
+	if (counter.sflag) printf("%-25s%6ld\n", "Nombre de mots uniques :", counter.scount);
 	printf(" total\n");
   }
   fflush(stdout);

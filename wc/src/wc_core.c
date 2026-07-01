@@ -8,8 +8,11 @@
 
 void count_file(FILE* f,countWord* stats)
 {
+  const void* value_ptr;
+  size_t value_len;
   char mot[512];
   int motTaille = 0;
+  int occurence;
   int c;
   int word = 0;
   dict_t* dict = dict_create();
@@ -25,8 +28,13 @@ void count_file(FILE* f,countWord* stats)
 		if (word){
       // On termine le mot pas le caractère de fin de chaine ( marqueur de fin)
       mot[motTaille] = '\0';
-      dict_status_t status = dict_add(dict, mot, motTaille+1, NULL, 0);  
-      // Si un nouveau mot unique est ajouté
+      if(dict_get_value(dict,mot,motTaille+1,&value_ptr,&value_len)==DICT_OK){
+        occurence = *(int*)value_ptr+1;
+      }
+      else{
+        occurence=1;
+      }
+      dict_status_t status = dict_add(dict, mot, motTaille+1, &occurence, sizeof(int));  
       if(status==DICT_OK){
         stats->scount++;
       }
@@ -49,7 +57,7 @@ void count_file(FILE* f,countWord* stats)
   stats->ltotal += stats->lcount;
   stats->wtotal += stats->wcount;
   stats->ctotal += stats->ccount;
-
+  afficheDico(dict);
 }
 
 

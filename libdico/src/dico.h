@@ -44,5 +44,5 @@ dict_status_t dict_contains(const dict_t* dict, const void* key, size_t key_len)
 dict_status_t dict_get_value(const dict_t* dict, const void* key, size_t key_len,
 const void** value_ptr, size_t* value_len);
 dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, size_t value_len);
-
+void afficheDico(dict_t* dict);
 #endif

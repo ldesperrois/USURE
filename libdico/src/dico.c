@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 
 #include "dico_private.h"
@@ -145,6 +146,56 @@ void dynamicResizing(dict_t* dict){
 	dict->table_len = (dict->table_len)*2;
 
 }
+
+
+/**
+ * @brief Fonction qui affiche un element du dictionnaire
+ * On considère que notre valeur est toujours en entier 32 bit
+ * @param cur 
+ */
+void afficheValue(dict_entry_t* cur){
+	printf("clé : %s\n",(char*)cur->raw_key);
+	printf("Son nombre d'occurences : %d\n",*(int*)cur->value);
+}
+
+
+
+/**
+ * @brief Fonction qui affiche les paires clé valeur du dictionnaire
+ * 
+ * @param dict 
+ */
+void afficheDico(dict_t* dict){
+	for(size_t i = 0; i < dict->table_len; i++){
+        dict_entry_t* cur = dict->table[i];
+		if(cur!=NULL){
+			printf("Paires clés valeur à l'index %zu:\n ",i);
+		}
+		while(cur){
+			if(cur!=NULL){
+				afficheValue(cur);
+			}
+			cur=cur->next;
+		}
+	}
+}
+
+void comparator(const void *a,const void* b){
+	return 
+}
+
+void trierOccurenceDecroissant(dict_t *dict){
+	// On créer un tableau aussi grand que le nombre de clés pour une données de type dict_entry_t
+	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t));
+	int indexTrie = 0;
+	for(int i=0;i<dict->key_nb;i++){
+		dict_entry_t* elementParcouru = dict->table[i];
+		while(elementParcouru!=NULL)
+
+	}
+}
+
+
 
  static void* internal_helper_copy_or_null(const void* src, size_t len) {
     if (!src || len == 0) return NULL;
