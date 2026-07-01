@@ -57,7 +57,8 @@ void count_file(FILE* f,countWord* stats)
   stats->ltotal += stats->lcount;
   stats->wtotal += stats->wcount;
   stats->ctotal += stats->ccount;
-  afficheDico(dict);
+  afficheDico(dict,1);
+  trierOccurenceDecroissant(dict);
 }
 
 

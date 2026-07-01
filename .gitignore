@@ -14,3 +14,5 @@ lib/
 # Fichiers de debug
 *.out
 core
+
+*.txt

@@ -165,7 +165,7 @@ void afficheValue(dict_entry_t* cur){
  * 
  * @param dict 
  */
-void afficheDico(dict_t* dict){
+void afficheDico(dict_t* dict,int uniq){
 	for(size_t i = 0; i < dict->table_len; i++){
         dict_entry_t* cur = dict->table[i];
 		if(cur!=NULL){
@@ -173,26 +173,53 @@ void afficheDico(dict_t* dict){
 		}
 		while(cur){
 			if(cur!=NULL){
-				afficheValue(cur);
+            if (uniq == 1) {
+                if (*(int*)cur->value == 1) {
+                    afficheValue(cur);
+                }
+            } 
+            else {
+            
+                afficheValue(cur);
+            }
+				
 			}
 			cur=cur->next;
 		}
 	}
 }
 
-void comparator(const void *a,const void* b){
-	return 
+int comparator(const void *a,const void* b){
+	 dict_entry_t* elementA = *(dict_entry_t**)a;
+	dict_entry_t *elementB = *(dict_entry_t **)b;
+	// Si soustraction positif b retourné avant a
+	int occurenceA = *(int*)elementA->value;
+	int occurenceB = *(int*)elementB->value;
+
+	return (occurenceA - occurenceB);
 }
 
 void trierOccurenceDecroissant(dict_t *dict){
 	// On créer un tableau aussi grand que le nombre de clés pour une données de type dict_entry_t
-	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t));
-	int indexTrie = 0;
-	for(int i=0;i<dict->key_nb;i++){
-		dict_entry_t* elementParcouru = dict->table[i];
-		while(elementParcouru!=NULL)
+	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t *));
 
+	int indexTrie = 0;
+	for(size_t i =0;i<dict->table_len;i++){
+		dict_entry_t* elementParcouru = dict->table[i];
+		while(elementParcouru!=NULL){
+			tableauTrie[indexTrie] = elementParcouru;
+			indexTrie+=1;
+			elementParcouru = elementParcouru->next;
+		}
 	}
+	// On utilsie la fonction qsort
+	qsort(tableauTrie,dict->key_nb,sizeof(dict_entry_t *),comparator);
+	printf("Affichage décroissant des mots selon leurs occurences : \n");
+	for (size_t j=0;j<dict->key_nb;j++){
+		printf(" la Cle : %s | Occurences : %d\n",(char *)tableauTrie[j]->raw_key,*(int *)tableauTrie[j]->value);
+	}
+
+
 }
 
 
@@ -283,9 +310,3 @@ dict_status_t dict_key_value_destroy(dict_t* dict,const void *raw_key,size_t key
 	
 }
 
-// ---------------------------------------------------------------------------
-// PARTIE BENCHMARK 
-// ---------------------------------------------------------------------------
-
-// Helper pour charger tout le fichier en mémoire AVANT de lancer le chrono
-// Cela évite de mesurer la vitesse du disque dur au lieu de l'algo
