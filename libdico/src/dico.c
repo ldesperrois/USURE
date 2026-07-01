@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 
 #include "dico_private.h"
@@ -9,7 +10,6 @@
 
 
 // This is ridiculously low:
-#define HASH_TABLE_DEFAULT_SIZE 503
 //#define HASH_TABLE_DEFAULT_SIZE 100003
 
 
@@ -75,7 +75,7 @@ void dict_destroy(dict_t* dict){
     free(dict);
 }
 
-dict_status_t internal_dict_equal_key(const dict_entry_t* a, uint32_t hash, const void* raw_key, size_t raw_key_len){
+static dict_status_t internal_dict_equal_key(const dict_entry_t* a, uint32_t hash, const void* raw_key, size_t raw_key_len){
 	if(a->hash == hash && a->raw_key_len == raw_key_len && !memcmp(a->raw_key, raw_key, raw_key_len))
 		return DICT_OK;
 	return DICT_NOK;
@@ -85,9 +85,9 @@ size_t dict_len(const dict_t* dict){
 	return dict->key_nb;
 }
 
-static dict_entry_t** internal_dict_find_entry_ptr(const dict_t* dict, const void* raw_key,
-	       	size_t raw_key_len, uint32_t hash) {
-    dict_entry_t** ptr = &(dict->table[hash % HASH_TABLE_DEFAULT_SIZE]);
+ dict_entry_t** internal_dict_find_entry_ptr(const dict_t* dict, const void* raw_key,
+	size_t raw_key_len, uint32_t hash) {
+    dict_entry_t** ptr = &(dict->table[hash & (dict->table_len-1)]);
     while (*ptr) {
         if (internal_dict_equal_key(*ptr, hash, raw_key, raw_key_len) == DICT_OK) {
             return ptr;
@@ -118,8 +118,86 @@ dict_status_t dict_get_value(const dict_t* dict, const void* key, size_t key_len
 	*value_len = ret->value_len;
 	return DICT_OK;
 }
+/**
+ * @brief Procédure qui s'occupe de redimenssioner le tableau 
+ * quand le facteur de charge est dépassé
+ * 
+ * @param dict 
+ */
+void dynamicResizing(dict_t* dict){
+	
+	size_t newSize  = dict->table_len*2;
+	printf("On effectue un redimensionnement pour une nouvelle taille de %zu\n",newSize);
+	dict_entry_t ** nouvelleTable = calloc(newSize,sizeof(dict_entry_t*));
+	for(size_t i=0;i<dict->table_len;i++){
+		dict_entry_t* parcour = dict->table[i];
+		while(parcour){
+			dict_entry_t* prochain = parcour->next;
 
-static void* internal_helper_copy_or_null(const void* src, size_t len) {
+			uint32_t newIndex = parcour->hash &(newSize-1);
+			parcour->next = nouvelleTable[newIndex];
+			nouvelleTable[newIndex] = parcour;
+
+			parcour = prochain;
+		}
+	}
+	free(dict->table);
+	dict->table = nouvelleTable;
+	dict->table_len = (dict->table_len)*2;
+
+}
+
+
+/**
+ * @brief Fonction qui affiche un element du dictionnaire
+ * On considère que notre valeur est toujours en entier 32 bit
+ * @param cur 
+ */
+void afficheValue(dict_entry_t* cur){
+	printf("clé : %s\n",(char*)cur->raw_key);
+	printf("Son nombre d'occurences : %d\n",*(int*)cur->value);
+}
+
+
+
+/**
+ * @brief Fonction qui affiche les paires clé valeur du dictionnaire
+ * 
+ * @param dict 
+ */
+void afficheDico(dict_t* dict){
+	for(size_t i = 0; i < dict->table_len; i++){
+        dict_entry_t* cur = dict->table[i];
+		if(cur!=NULL){
+			printf("Paires clés valeur à l'index %zu:\n ",i);
+		}
+		while(cur){
+			if(cur!=NULL){
+				afficheValue(cur);
+			}
+			cur=cur->next;
+		}
+	}
+}
+
+void comparator(const void *a,const void* b){
+	return 
+}
+
+void trierOccurenceDecroissant(dict_t *dict){
+	// On créer un tableau aussi grand que le nombre de clés pour une données de type dict_entry_t
+	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t));
+	int indexTrie = 0;
+	for(int i=0;i<dict->key_nb;i++){
+		dict_entry_t* elementParcouru = dict->table[i];
+		while(elementParcouru!=NULL)
+
+	}
+}
+
+
+
+ static void* internal_helper_copy_or_null(const void* src, size_t len) {
     if (!src || len == 0) return NULL;
     void* dest = malloc(len);
     if (dest) memcpy(dest, src, len);
@@ -152,7 +230,7 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
 	    return DICT_ERR_MALLOC;
 
 	new_node->raw_key = internal_helper_copy_or_null(key, key_len);
-    	new_node->value   = internal_helper_copy_or_null(value, value_len);
+    new_node->value   = internal_helper_copy_or_null(value, value_len);
 
 	if (!new_node->raw_key || (value_len > 0 && !new_node->value)) {
        	    free((void*)new_node->raw_key);
@@ -170,7 +248,39 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
 
 	// Update dict length counter
 	dict->key_nb++;
+
+	if ((double)dict->key_nb / dict->table_len > 3.0)
+		dynamicResizing(dict);
+
 	return DICT_OK;
+}
+/**
+ * @brief Fonction qui s'occupe de supprimer une clé avec sa valeur
+ * en conservant la logigue de notre dictionnaire
+ * 
+ * @param dict 
+ * @param raw_key 
+ * @param key_len 
+ * @return dict_status_t 
+ */
+dict_status_t dict_key_value_destroy(dict_t* dict,const void *raw_key,size_t key_len){
+	uint32_t h = fnv1a_32(raw_key, key_len); 
+	// On recupère l'enregistrement du dictionnaire
+	dict_entry_t** ret = internal_dict_find_entry_ptr(dict,raw_key,key_len,h);
+	// Si pas trouvé
+	if (*ret==NULL)
+	{
+		return DICT_ERR_NOT_FOUND;
+	}
+	else{
+		// On supprime la valeur et on remplace l'element par son next
+		dict_entry_t *delete = *ret;
+		*ret = delete->next;
+		dict->key_nb--;
+		dict_entry_destroy(delete);
+		return DICT_OK;
+	}
+	
 }
 
 // ---------------------------------------------------------------------------
@@ -179,37 +289,3 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
 
 // Helper pour charger tout le fichier en mémoire AVANT de lancer le chrono
 // Cela évite de mesurer la vitesse du disque dur au lieu de l'algo
-char** load_dataset(const char* filename, size_t* out_count) {
-    FILE* f = fopen(filename, "r");
-    if (!f) { perror(filename); return NULL; }
-
-    // On alloue large pour pas s'embêter avec des reallocs complexes dans le bench
-    // Disons max 100k mots pour ce TP
-    size_t capacity = 100000; 
-    char** words = malloc(capacity * sizeof(char*));
-    size_t count = 0;
-
-    char *line = NULL;
-    size_t len = 0;
-
-    while (getline(&line, &len, f) != -1) {
-        if (count >= capacity) break;
-        
-        // Nettoyage \n
-        line[strcspn(line, "\r\n")] = 0;
-        
-        // Copie propre pour stocker dans notre tableau
-        words[count] = strdup(line);
-        count++;
-    }
-    
-    free(line);
-    fclose(f);
-    *out_count = count;
-    printf("[INFO] %zu mots chargés en mémoire depuis %s\n", count, filename);
-    return words;
-}
-
-
-
-

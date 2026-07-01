@@ -1,87 +1,164 @@
 #include "dico.h"
+#include "dico_private.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+
+/**
+ * @brief Fonction qui charge le fichier avev ses mots
+ * 
+ * @param filename 
+ * @param out_count 
+ * @return char** 
+ */
+char** load_dataset(const char* filename, size_t* out_count) {
+    FILE* f = fopen(filename, "r");
+    if (!f) { perror(filename); return NULL; }
+
+    // On alloue large pour pas s'embêter avec des reallocs complexes dans le bench
+    // Disons max 100k mots pour ce TP
+    size_t capacity = 100000; 
+    char** words = malloc(capacity * sizeof(char*));
+    size_t count = 0;
+
+    char *line = NULL;
+    size_t len = 0;
+
+    while (getline(&line, &len, f) != -1) {
+        if (count >= capacity) break;
+        
+        // Nettoyage \n
+        line[strcspn(line, "\r\n")] = 0;
+        
+        // Copie propre pour stocker dans notre tableau
+        words[count] = strdup(line);
+        count++;
+    }
+    
+    free(line);
+    fclose(f);
+    *out_count = count;
+    printf("[INFO] %zu mots chargés en mémoire depuis %s\n", count, filename);
+    return words;
+}
+
+
+
+
 
 
 int main(void) {
-    dict_t* set = dict_create();
+    size_t word_count = 0;
+    char** dataset = load_dataset("mots_17479.txt", &word_count);
+
+    if (!dataset || word_count == 0) {
+        fprintf(stderr, "Erreur: Impossible de charger le dataset.\n");
+        return 1;
+    }
+
+    // Attention, arrivé là on peut avoir des doublons comptés dans word_count !
     dict_t* dico = dict_create();
-
-    FILE* f = fopen("mots_17479.txt", "r");
-    if (!f) { perror("mots_17479.txt"); return 1; }
-
-    char *line = NULL;
-    size_t len = 0; // taille du buffer, getline s'en charge
-
-    int line_nb = 1;
-    while (getline(&line, &len, f) != -1) {
-        // line contient la ligne complète, '\n' inclus
-	size_t word_len = strcspn(line, "\r\n");
- 	// on remplace \n par \0 (pour pas casser printf, sinon OSEF)
-	line[word_len] = '\0';
-	// on veut hasher toute la chaîne \0 compris
-	
-	// ici on construit un vrai dictionnaire clé -> valeur
-	dict_add(dico, line, word_len + 1, &line_nb, sizeof(int));
-
-	// là on fait un set, donc juste des clés
-	dict_add(set, line, word_len + 1, NULL, 0);
-	line_nb++;
-    }
-
-    printf("Le dictionnaire contient %ld clés\n", dict_len(dico));
-    printf("Le set contient %ld clés\n", dict_len(set));
-
-    char to_find[]="aplatissaient";
-
-    // un essai avec le set
-    printf("Recherche dans un set simple\n");
+    
+    printf("\n=== DEBUT DU BENCHMARK ===\n");
+    printf("Configuration: %d cases dans le tableau\n", HASH_TABLE_DEFAULT_SIZE);
+    
+    // ---------------------------------------------------------
+    // TEST 1 : INSERTION
+    // ---------------------------------------------------------
     uint64_t t0 = now_us();
-    dict_status_t found = dict_contains(set, to_find, strlen(to_find) + 1);
+    for (size_t i = 0; i < word_count; i++) {
+        // On utilise i comme "valeur" (int) juste pour avoir une payload
+        int val = (int)i;
+        dict_add(dico, dataset[i], strlen(dataset[i]) + 1, &val, sizeof(int));
+	// Sinon on peut aussi mettre NULL et 0 en derniers paramètres et
+	// ça fait un set du pauvre.
+    }
+    size_t uniq_word_count = dict_len(dico); // ici on a le nombre de clés uniques
     uint64_t t1 = now_us();
-    printf("durée = %llu us\n",
-    	(unsigned long long)(t1 - t0));
-    if(found == DICT_OK){
-	    printf("%s est dans la liste de mots\n", to_find);
-    }
-    else{
-	    printf("%s n'est PAS dans la liste de mots\n", to_find);
-    }
+    
+    double total_insert_ms = (t1 - t0) / 1000.0;
+    double ns_per_insert = ((double)(t1 - t0) * 1000.0) / word_count;
+    
+    printf("\n[INSERTION]\n");
+    printf("Le dictionnaire contient %ld mots uniques parmi %ld mots dans le fichier\n",
+		    uniq_word_count, word_count);
+    printf("Total temps : %.3f ms\n", total_insert_ms);
+    printf("Moyenne     : %.2f ns / mot\n", ns_per_insert);
 
-    // le même avec une recherche de clé dans le dictionnaire
-    printf("Recherche dans un dictionnaire\n");
-    char to_find2[]="qdsfjhqskjlhfk";
+    // ---------------------------------------------------------
+    // TEST 2 : RECHERCHE (POSITIVE - Cas où ça existe)
+    // ---------------------------------------------------------
     t0 = now_us();
-    found = dict_contains(dico, to_find2, strlen(to_find2) + 1);
+    int found_count = 0;
+    for (size_t i = 0; i < word_count; i++) {
+        if (dict_contains(dico, dataset[i], strlen(dataset[i]) + 1) == DICT_OK) {
+            found_count++;
+        }
+    }
     t1 = now_us();
-    printf("durée = %llu us\n",
-    	(unsigned long long)(t1 - t0));
-    if(found == DICT_OK){
-	    printf("%s est dans la liste de mots\n", to_find2);
-    }
-    else{
-	    printf("%s n'est PAS dans la liste de mots\n", to_find2);
-    }
 
+    double ns_per_find_hit = ((double)(t1 - t0) * 1000.0) / word_count;
 
-    printf("Recherche clé/valeur dans un dictionnaire\n");
-    char to_find3[]="impliquassent";
-    const int* value;
-    size_t value_len;
+    printf("\n[RECHERCHE (HIT) - Mots existants]\n");
+    printf("Trouvés     : %d / %zu\n", found_count, word_count);
+    printf("Moyenne     : %.2f ns / recherche\n", ns_per_find_hit);
+
+    // ---------------------------------------------------------
+    // TEST 3 : RECHERCHE (NEGATIVE - Cas où ça n'existe pas)
+    // C'est souvent le pire cas pour les tables de hachage (parcours complet des collisions)
+    // ---------------------------------------------------------
     t0 = now_us();
-    found = dict_get_value(dico, to_find3, strlen(to_find3) + 1, (const void**)&value, &value_len);
+    int not_found_count = 0;
+    char buffer[256];
+    
+    for (size_t i = 0; i < word_count; i++) {
+        // On génère un mot qui n'existe surement pas (mot + "_X")
+        snprintf(buffer, 256, "%s_X", dataset[i]);
+        
+        if (dict_contains(dico, buffer, strlen(buffer) + 1) != DICT_OK) {
+            not_found_count++;
+        }
+    }
     t1 = now_us();
-    printf("durée = %llu us\n",
-    	(unsigned long long)(t1 - t0));
-    if(found == DICT_OK){
-	    printf("%s est dans la liste de mots à la ligne %d\n", to_find3, *(int*)value);
-    }
-    else{
-	    printf("%s n'est PAS dans la liste de mots\n", to_find3);
-    }
 
+    double ns_per_find_miss = ((double)(t1 - t0) * 1000.0) / word_count;
+
+    printf("\n[RECHERCHE (MISS) - Mots inexistants]\n");
+    printf("Non trouvés : %d / %zu\n", not_found_count, word_count);
+    printf("Moyenne     : %.2f ns / recherche\n", ns_per_find_miss);
+
+    // ---------------------------------------------------------
+    // ANALYSE RAPIDE 
+    // ---------------------------------------------------------
+    printf("\n=== ANALYSE ===\n");
+    printf("Facteur de charge (Load Factor) : %.2f\n", (float)word_count / dico->table_len);
+    if ((float)word_count / dico->table_len > 5.0) {
+        printf("ALERTE: Le facteur de charge est ÉLEVÉ.\n");
+        printf("Cela signifie beaucoup de collisions (moyenne théorique de %.0f éléments par case).\n", 
+               (float)word_count / HASH_TABLE_DEFAULT_SIZE);
+        printf("C'est pour ça que la recherche est lente !\n");
+    }
+    printf("\nTest intensif sur une clé unique\n");
+    t0 = now_us();
+    
+    // On fait 10 MILLIONS de fois la même recherche
+    for (int i = 0; i < 10000000; i++) {
+        // On cherche toujours le même mot (ou on cycle sur un petit tableau)
+        // pour que les données restent dans le Cache L1 du CPU.
+        // Ainsi, on élimine le temps RAM, et on ne mesure que le temps CPU (Hash + Modulo).
+        dict_contains(dico, dataset[uniq_word_count -1], strlen(dataset[uniq_word_count - 1] + 1));
+    }
+   
+    t1 = now_us();
+    double ns_per_find = ((double)(t1 - t0) * 1000.0) / 10000000;
+    printf("Durée par recherche: %.2f ns / recherche\n", ns_per_find);
+
+
+    // Nettoyage
     dict_destroy(dico);
-    free(line);
-    fclose(f);
+    for(size_t i=0; i<word_count; i++) free(dataset[i]);
+    free(dataset);
+
     return 0;
 }
