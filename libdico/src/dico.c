@@ -218,8 +218,7 @@ void trierOccurenceDecroissant(dict_t *dict){
 	for (size_t j=0;j<dict->key_nb;j++){
 		printf(" la Cle : %s | Occurences : %d\n",(char *)tableauTrie[j]->raw_key,*(int *)tableauTrie[j]->value);
 	}
-
-
+	free(tableauTrie);
 }
 
 
