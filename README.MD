@@ -58,10 +58,10 @@ Comportement par défaut : si aucune option n’est donnée, le programme affich
 ### Exemples
 
 ```bash
-./wc/bin/wcCompile texte.txt
-./wc/bin/wcCompile -l -w texte.txt
-./wc/bin/wcCompile -S texte.txt
-cat texte.txt | ./wc/bin/wcCompile
+./wc/bin/wcCompile fichierTextTest/pg17518.txt
+./wc/bin/wcCompile -l -w fichierTextTest/test
+./wc/bin/wcCompile -S fichierTextTest/test
+
 ```
 
 Si aucun fichier n’est passé, le programme lit l’entrée standard.
@@ -94,4 +94,5 @@ Cette commande nettoie `libdico` et `wc`.
 - Les messages de sortie peuvent être très verbeux sur de gros fichiers, surtout avec l’option `-S`.
 
 - **IMPPORTANT** : Pour l'affichage il faut se rappeller que un même mot répété plusieurs fois compte donc pour plusieurs dans le total,mais pour un seul dans les mots uniques
+
 - on peut avoir des différences dans l'affichage des mots qui apparaissent une seul fois et le nombre de mots uniques ( sans compter les deuxièmes ou troisièmes fois où apparaissenet un mot mais seulement sa première apaprition dans le fichier )

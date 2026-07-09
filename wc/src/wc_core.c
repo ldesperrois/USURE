@@ -61,6 +61,7 @@ void count_file(FILE* f,countWord* stats)
   stats->ltotal += stats->lcount;
   stats->wtotal += stats->wcount;
   stats->ctotal += stats->ccount;
+  stats->stotal +=stats->scount;
   if(stats->sflag){
       afficheDico(dict,1);
   }

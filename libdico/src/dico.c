@@ -9,7 +9,7 @@
 #include "dico.h"
 
 
-// This is ridiculously low:
+
 //#define HASH_TABLE_DEFAULT_SIZE 100003
 
 // FNV-1a 32 bits
@@ -250,8 +250,8 @@ void trierOccurenceDecroissant(dict_t *dict){
 }
 
 dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, size_t value_len){
-	// if data is NULL or data_len is zero no value will be associated
-	// with the key, call this a poor man's set
+	// Si data est NULL ou si data_len vaut zéro, aucune valeur ne sera associée
+    // à la clé, on peut appeler cela un ensemble du pauvre (poor man's set)
 	uint32_t h = fnv1a_32(key, key_len); 
 	dict_entry_t** entry_ptr = internal_dict_find_entry_ptr(dict, key, key_len, h);
 	if(*entry_ptr){ // we already know this key, update it
@@ -265,8 +265,8 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
             (*entry_ptr)->value_len = value_len;
 	    return DICT_VALUE_UPDATED;
 	}
-	// If we're here we either have a collision or it's a new key
-	// In both cases we have to create a new dict_entry
+	// Si nous sommes ici, nous avons soit une collision, soit c'est une nouvelle clé
+    // Dans les deux cas, nous devons créer une nouvelle entrée dict_entry
 	
 	dict_entry_t* new_node;
 	new_node = calloc(1, sizeof(*new_node));
@@ -288,10 +288,10 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
 	new_node->raw_key_len = key_len;
 	new_node->value_len = value_len;
 
-	// Append new data at the end of the list
+	// Ajoute les nouvelles données à la fin de la liste
 	*entry_ptr = new_node;
 
-	// Update dict length counter
+	// Ajoute les nouvelles données à la fin de la liste
 	dict->key_nb++;
 
 	if ((double)dict->key_nb / dict->table_len > 3)

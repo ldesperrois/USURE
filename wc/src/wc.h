@@ -3,19 +3,20 @@
 #include <stdio.h>
 
 struct _count {
-    int lflag;          /* Count lines */
-    int wflag;          /* Count words */
-    int cflag;          /* Count characters */
-    int sflag;          /* Count of uniq words*/
+    int lflag;          /* Indicateur pour compter les lignes */
+    int wflag;          /* Indicateur pour compter les mots */
+    int cflag;          /* Indicateur pour compter les caractères */
+    int sflag;          /* Indicateur pour compter les mots uniques */
 
-    long lcount;        /* Count of lines */
-    long wcount;        /* Count of words */
-    long ccount;        /* Count of characters */
-    long scount;        /* Count of uniq words*/
+    long lcount;        /* Nombre de lignes */
+    long wcount;        /* Nombre de mots */
+    long ccount;        /* Nombre de caractères */
+    long scount;        /* Nombre de mots uniques */
 
-    long ltotal;        /* Total count of lines */
-    long wtotal;        /* Total count of words */
-    long ctotal;        /* Total count of characters */
+    long ltotal;        /* Nombre total de lignes */
+    long wtotal;        /* Nombre total de mots */
+    long ctotal;        /* Nombre total de caractères */
+    long stotal;        /* Nombre total de mots uniques */
 };
 
 typedef struct _count countWord;

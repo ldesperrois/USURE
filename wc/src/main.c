@@ -59,11 +59,13 @@ int main(int argc, char* argv[])
 
   }
   if (tflag) {
-	if (counter.lflag) 	printf("%-25s%6ld\n", "Nombre de lignes :", counter.lcount);
-	if (counter.wflag) printf("%-25s%6ld\n", "Nombre de mots :", counter.wcount);
-	if (counter.cflag) printf("%-25s%6ld\n", "Nombre de caractères :", counter.ccount);
-	if (counter.sflag) printf("%-25s%6ld\n", "Nombre de mots uniques :", counter.scount);
 	printf(" total\n");
+	if (counter.lflag) 	printf("%-25s%6ld\n", "Nombre de lignes total :", counter.ltotal);
+	if (counter.wflag) printf("%-25s%6ld\n", "Nombre de mots total :", counter.wtotal);
+	if (counter.cflag) printf("%-25s%6ld\n", "Nombre de caractères total :", counter.ctotal);
+	if (counter.sflag) printf("%-25s%6ld\n", "Nombre de mots uniques total :", counter.stotal);
+
+	
   }
   fflush(stdout);
   exit(0);
