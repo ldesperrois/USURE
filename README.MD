@@ -95,4 +95,4 @@ Cette commande nettoie `libdico` et `wc`.
 
 - **IMPPORTANT** : Pour l'affichage il faut se rappeller que un même mot répété plusieurs fois compte donc pour plusieurs dans le total,mais pour un seul dans les mots uniques
 
-- on peut avoir des différences dans l'affichage des mots qui apparaissent une seul fois et le nombre de mots uniques ( sans compter les deuxièmes ou troisièmes fois où apparaissenet un mot mais seulement sa première apaprition dans le fichier )
+- on peut avoir des différences dans l'affichage des mots qui apparaissent une seul fois et le nombre de mots uniques ( sans compter les deuxièmes ou troisièmes fois où apparaissenet un mot mais seulement sa première apparition dans le fichier )
