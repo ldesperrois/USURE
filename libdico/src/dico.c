@@ -40,7 +40,7 @@ dict_t* dict_create(void){
 	if(!dict)
 	    return NULL;
 
-	dict->table = calloc(HASH_TABLE_DEFAULT_SIZE, sizeof(dict_entry_t*));
+	dict->table = calloc(HASH_TABLE_DEFAULT_SIZE, sizeof(*dict->table));
 
 	if (!dict->table) {
             free(dict); 
@@ -217,7 +217,7 @@ int comparator(const void *a,const void* b){
  */
 void trierOccurenceDecroissant(dict_t *dict){
 	// On créer un tableau aussi grand que le nombre de clés pour une données de type dict_entry_t
-	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t *));
+	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(*tableauTrie));
 
 	int indexTrie = 0;
 	// Parcourt de la liste pour les placer dans une liste qui permettra
