@@ -9,9 +9,7 @@ OBJ = $(SRC:.c=.o)
 # Nom de la lib (On garde .so qui est le standard Linux, mais géré par macOS)
 LIB = lib/libdico.so
 
-# ---------------------------------------------------------
-# DÉTECTION DU SYSTÈME D'EXPLOITATION
-# ---------------------------------------------------------
+# Pour que le make fonctionne sur Linux ou MacOs
 # La commande "uname -s" renvoie "Darwin" sur Mac et "Linux" sur Linux.
 UNAME_S := $(shell uname -s)
 
@@ -36,12 +34,17 @@ $(LIB): $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# pour supprimer les dossiers spécifiques produit par mac
 clean:
 	rm -rf $(OBJ) lib/ test_prog *.dSYM
 
 .PHONY: all clean test
 
-# Cible de test (le RPATH configuré ainsi fonctionne sur Linux ET macOS)
+# Cible de test pour tester le benchmark
+# lie tous les .o avec la librairie de libdico
+
+# leaks --atExit -- à rjaouter sur mac pour tester les fuites mémoire de ./test_prog
 test: $(LIB) src/benchmark.c
 	$(CC) $(CFLAGS) src/benchmark.c -L./lib -ldico -Wl,-rpath,$(shell pwd)/lib -o test_prog
 	./test_prog
+	
