@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 	counter.lflag = 1;
 	counter.wflag = 1;
 	counter.cflag = 1;
+	counter.sflag = 1;
 
   }
   // Si on a deux fichiers

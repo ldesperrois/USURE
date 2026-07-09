@@ -12,10 +12,6 @@
 // This is ridiculously low:
 //#define HASH_TABLE_DEFAULT_SIZE 100003
 
-
-
-
-
 // FNV-1a 32 bits
 uint32_t fnv1a_32(const void *data, size_t len) {
     uint32_t hash = 0x811c9dc5; // offset_basis 32 bits
@@ -128,13 +124,17 @@ void dynamicResizing(dict_t* dict){
 	
 	size_t newSize  = dict->table_len*2;
 	printf("On effectue un redimensionnement pour une nouvelle taille de %zu\n",newSize);
-	dict_entry_t ** nouvelleTable = calloc(newSize,sizeof(dict_entry_t*));
+	// On met la mémoire à zéro à l'aide de calloc puis on lui donne le sizeof de notre variable
+	dict_entry_t ** nouvelleTable = calloc(newSize,sizeof(*nouvelleTable));
+	// On parcout ensuite les index du dictionnaires
 	for(size_t i=0;i<dict->table_len;i++){
 		dict_entry_t* parcour = dict->table[i];
 		while(parcour){
 			dict_entry_t* prochain = parcour->next;
-
+			// On effectué le nouveau masque binaire avec la nouvelle taille de puissance de 2^n -1
 			uint32_t newIndex = parcour->hash &(newSize-1);
+			// On déplace la tête d'index du dictionnaire
+			// l'ancien element parcouru devient le prochain de celui qu'on insère
 			parcour->next = nouvelleTable[newIndex];
 			nouvelleTable[newIndex] = parcour;
 
@@ -151,6 +151,7 @@ void dynamicResizing(dict_t* dict){
 /**
  * @brief Fonction qui affiche un element du dictionnaire
  * On considère que notre valeur est toujours en entier 32 bit
+ * et notre clé un char*
  * @param cur 
  */
 void afficheValue(dict_entry_t* cur){
@@ -166,6 +167,9 @@ void afficheValue(dict_entry_t* cur){
  * @param dict 
  */
 void afficheDico(dict_t* dict,int uniq){
+	if(uniq==1){
+		printf("Affichage des mots avec 1 occurence\n");
+	}
 	for(size_t i = 0; i < dict->table_len; i++){
         dict_entry_t* cur = dict->table[i];
 		if(cur!=NULL){
@@ -173,13 +177,14 @@ void afficheDico(dict_t* dict,int uniq){
 		}
 		while(cur){
 			if(cur!=NULL){
+			// Si on souhaite l'affichage des occurences uniques
             if (uniq == 1) {
                 if (*(int*)cur->value == 1) {
                     afficheValue(cur);
                 }
             } 
             else {
-            
+				// sinon affichage classique des élements du dictionnaire
                 afficheValue(cur);
             }
 				
@@ -188,9 +193,16 @@ void afficheDico(dict_t* dict,int uniq){
 		}
 	}
 }
-
+/**
+ * @brief Fonction de comparaison de deux élements de type dict_entry
+ * 
+ * @param a 
+ * @param b 
+ * @return int 
+ */
 int comparator(const void *a,const void* b){
-	 dict_entry_t* elementA = *(dict_entry_t**)a;
+	// On fait un cast des élements 
+	dict_entry_t* elementA = *(dict_entry_t**)a;
 	dict_entry_t *elementB = *(dict_entry_t **)b;
 	// Si soustraction positif b retourné avant a
 	int occurenceA = *(int*)elementA->value;
@@ -198,12 +210,18 @@ int comparator(const void *a,const void* b){
 
 	return (occurenceA - occurenceB);
 }
-
+/**
+ * @brief Fonction qui trie les occurences
+ * 
+ * @param dict 
+ */
 void trierOccurenceDecroissant(dict_t *dict){
 	// On créer un tableau aussi grand que le nombre de clés pour une données de type dict_entry_t
 	dict_entry_t** tableauTrie = calloc(dict->key_nb,sizeof(dict_entry_t *));
 
 	int indexTrie = 0;
+	// Parcourt de la liste pour les placer dans une liste qui permettra
+	// d'utiliser la fonction qsort qui demande un array
 	for(size_t i =0;i<dict->table_len;i++){
 		dict_entry_t* elementParcouru = dict->table[i];
 		while(elementParcouru!=NULL){
@@ -218,6 +236,7 @@ void trierOccurenceDecroissant(dict_t *dict){
 	for (size_t j=0;j<dict->key_nb;j++){
 		printf(" la Cle : %s | Occurences : %d\n",(char *)tableauTrie[j]->raw_key,*(int *)tableauTrie[j]->value);
 	}
+	// On oublie pas de libérer la mémoire pour éviter des fuites mémoires avec valgrind ou leaks(équivalent MAC)
 	free(tableauTrie);
 }
 
@@ -275,7 +294,7 @@ dict_status_t dict_add(dict_t* dict, void* key, size_t key_len, void* value, siz
 	// Update dict length counter
 	dict->key_nb++;
 
-	if ((double)dict->key_nb / dict->table_len > 3.0)
+	if ((double)dict->key_nb / dict->table_len > 3)
 		dynamicResizing(dict);
 
 	return DICT_OK;
@@ -302,6 +321,7 @@ dict_status_t dict_key_value_destroy(dict_t* dict,const void *raw_key,size_t key
 		// On supprime la valeur et on remplace l'element par son next
 		dict_entry_t *delete = *ret;
 		*ret = delete->next;
+		// On soustrait le nombre de clés présentes logiquement
 		dict->key_nb--;
 		dict_entry_destroy(delete);
 		return DICT_OK;
