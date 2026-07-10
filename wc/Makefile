@@ -1,3 +1,5 @@
+# Alexandre Chaussade
+# Lucas Desperrois
 # nom du compilateurs
 CC = gcc
 # Options de compilations 

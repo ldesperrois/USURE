@@ -1,3 +1,5 @@
+// Alexandre Chaussade
+// Desperrois Lucas
 #include "dico.h"
 #include "dico_private.h"
 #include <string.h>

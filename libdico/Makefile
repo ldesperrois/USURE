@@ -1,9 +1,12 @@
+# Alexandre Chaussade
+# Lucas Desperrois
 CC = gcc
 # -fPIC est obligatoire partout pour une bibliothèque dynamique.
 CFLAGS = -Wall -Wextra -Werror -g -fPIC
 
 # Liste des sources
-SRC = $(wildcard src/*.c)
+SRC = $(filter-out src/benchmark.c, $(wildcard src/*.c))
+
 OBJ = $(SRC:.c=.o)
 
 # Nom de la lib (On garde .so qui est le standard Linux, mais géré par macOS)

@@ -1,3 +1,5 @@
+# Alexandre Chaussade
+# Lucas Desperrois
 # Makefile principal 
 
 all: libdico wc

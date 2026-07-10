@@ -1,3 +1,5 @@
+// Alexandre Chaussade
+// Desperrois Lucas
 #include "wc.h"
 #include <stdlib.h>
 #include <unistd.h>
