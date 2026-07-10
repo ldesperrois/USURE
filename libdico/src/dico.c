@@ -1,3 +1,5 @@
+// Alexandre Chaussade
+// Desperrois Lucas
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -195,7 +197,9 @@ void afficheDico(dict_t* dict,int uniq){
 }
 /**
  * @brief Fonction de comparaison de deux élements de type dict_entry
- * 
+ * IMPORTANT : je précise que il fallait rendre un tri décroissant
+ * mais j'ai fais le choix de le mettre en croissant pour observer les
+ * occurences les plus grandes à la fin de l'affichage
  * @param a 
  * @param b 
  * @return int 

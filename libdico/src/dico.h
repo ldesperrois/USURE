@@ -1,3 +1,5 @@
+// Alexandre Chaussade
+// Desperrois Lucas
 #ifndef DICO_H       // 1. GARDE D'INCLUSION
 #define DICO_H
 
@@ -15,17 +17,6 @@ typedef enum {
     DICT_ERR_MALLOC
 } dict_status_t;
 
-typedef struct dict_entry{
-	uint32_t hash;
-	
-	void* raw_key;
-	size_t raw_key_len;
-
-	void* value;
-	size_t value_len;
-
-	struct dict_entry *next;
-} dict_entry_t;
 
 
 

@@ -1,3 +1,5 @@
+// Alexandre Chaussade
+// Desperrois Lucas
 #ifndef DICOPRIVATE_H      
 #define DICOPRIVATE_H
 
@@ -5,6 +7,17 @@
 #include <stddef.h>
 #include "dico.h"
 
+typedef struct dict_entry{
+	uint32_t hash;
+	
+	void* raw_key;
+	size_t raw_key_len;
+
+	void* value;
+	size_t value_len;
+
+	struct dict_entry *next;
+} dict_entry_t;
 
 
 struct dict_s {
